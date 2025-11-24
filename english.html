@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="英語トレPRO">
   <meta name="theme-color" content="#f4fbff">
 
-  <!-- iOS Web App アイコン＆スプラッシュ（PCではただのリンク） -->
+  <!-- iOS Web App アイコン＆スプラッシュ -->
   <link rel="apple-touch-icon" href="icon-512.png">
   <link rel="apple-touch-startup-image"
         href="splash-1284x2778-notext.png"
@@ -104,6 +104,26 @@
       height: 7px;
       border-radius: 50%;
       background: var(--accent-main);
+    }
+
+    .login-row {
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      color: var(--text-soft);
+    }
+
+    .login-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+
+    .login-controls button {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
     }
 
     .csv-row {
@@ -328,6 +348,11 @@
     .score-mid { color: var(--warn); }
     .score-bad { color: var(--danger); }
 
+    /* スマホ専用ナビボタン（デフォルトは非表示） */
+    .nav-buttons-mobile {
+      display: none;
+    }
+
     @media (max-width: 380px) {
       h1 { font-size: 1.15rem; }
       .ja-text, .en-text { font-size: 1rem; }
@@ -366,12 +391,38 @@
         justify-content: flex-start;
       }
     }
-	/* スマホ（幅768px以下）のときは CSVアップロード行を非表示 */
-@media (max-width: 768px) {
-  .csv-row {
-    display: none;
-  }
-}
+
+    /* ======== スマホ表示だけUI変更（幅768px以下） ======== */
+    @media (max-width: 768px) {
+
+      /* CSVアップロード行を非表示 */
+      .csv-row {
+        display: none;
+      }
+
+      /* カエルのメッセージを隠す */
+      .cheer-box {
+        display: none !important;
+      }
+
+      /* 日本語を聞くボタンを隠す */
+      #btnPlayJa {
+        display: none !important;
+      }
+
+      /* スマホ専用「前へ／次へ」をシャドウイングの下に表示 */
+      .nav-buttons-mobile {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      /* 既存の位置の前/次ボタンはスマホでは非表示 */
+      #btnPrev, #btnNext {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -383,6 +434,14 @@
           <span class="mode-tag-dot"></span>
           <span>瞬間英作文・シャドウイング道場</span>
         </div>
+      </div>
+
+      <div id="loginArea" class="login-row">
+        🔓 ログインしてデータをオンライン同期
+      </div>
+      <div class="login-controls">
+        <button type="button" onclick="signInWithGoogle()">🔑 Googleでログイン</button>
+        <button type="button" onclick="signOut()">🚪 ログアウト</button>
       </div>
 
       <div class="csv-row">
@@ -445,6 +504,12 @@
           <button id="btnPlayJa">🗣️ 日本語を聞く</button>
           <button id="btnPlayEn" class="primary">🎧 英語を1回聞く</button>
           <button id="btnShadow" class="accent">🔁 シャドウイング（3回）</button>
+        </div>
+
+        <!-- スマホ専用ナビ（PCではCSSで非表示） -->
+        <div class="nav-buttons-mobile">
+          <button id="btnPrev_mobile">⬅️ 前へ</button>
+          <button id="btnNext_mobile">➡️ 次へ</button>
         </div>
       </div>
 
@@ -531,23 +596,27 @@
     }
   ];
 
+  function normalizeSentenceObj(s) {
+    return {
+      ja: s.ja || "",
+      en: s.en || "",
+      note: s.note || "",
+      favorite: !!s.favorite,
+      review: !!s.review
+    };
+  }
+
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const obj = JSON.parse(raw);
       if (Array.isArray(obj)) {
-        return { sentences: obj, isRandomMode: false, filterMode: "all" };
+        return { sentences: obj.map(normalizeSentenceObj), isRandomMode: false, filterMode: "all" };
       }
       if (!obj || !Array.isArray(obj.sentences)) return null;
       return {
-        sentences: obj.sentences.map(s => ({
-          ja: s.ja || "",
-          en: s.en || "",
-          note: s.note || "",
-          favorite: !!s.favorite,
-          review: !!s.review
-        })),
+        sentences: obj.sentences.map(normalizeSentenceObj),
         isRandomMode: !!obj.isRandomMode,
         filterMode: obj.filterMode || "all"
       };
@@ -566,6 +635,10 @@
       }));
     } catch (e) {
       console.error(e);
+    }
+    // ログインしていればオンラインにも保存
+    if (typeof window.saveRemoteState === "function") {
+      window.saveRemoteState();
     }
   }
 
@@ -597,6 +670,8 @@
   const btnModeFavOnly = document.getElementById("btnModeFavOnly");
   const btnModeReviewOnly = document.getElementById("btnModeReviewOnly");
   const btnRecog = document.getElementById("btnRecog");
+  const btnPrevMobile = document.getElementById("btnPrev_mobile");
+  const btnNextMobile = document.getElementById("btnNext_mobile");
 
   const recogResult = document.getElementById("recogResult");
   const recogYour = document.getElementById("recogYour");
@@ -629,7 +704,7 @@
   function randomFrom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
-  function setCheer(message) { cheerText.textContent = message; }
+  function setCheer(message) { if (cheerText) cheerText.textContent = message; }
   function randomCheerNeutral() { setCheer(randomFrom(cheerMessagesNeutral)); }
 
   function makeOrder() {
@@ -748,7 +823,6 @@
     const total = order.length || sentences.length;
     counter.textContent = `文 ${currentIndex + 1} / ${total}`;
     jaText.textContent = s.ja;
-
     updateEnView();
     updateNote();
     updateProgress();
@@ -815,6 +889,21 @@
   });
 
   document.getElementById("btnPrev").addEventListener("click", () => {
+    const total = order.length || sentences.length;
+    currentIndex = (currentIndex - 1 + total) % total;
+    recogResult.style.display = "none";
+    updateView();
+  });
+
+  // モバイル専用 前へ / 次へ
+  btnNextMobile.addEventListener("click", () => {
+    const total = order.length || sentences.length;
+    currentIndex = (currentIndex + 1) % total;
+    recogResult.style.display = "none";
+    updateView();
+  });
+
+  btnPrevMobile.addEventListener("click", () => {
     const total = order.length || sentences.length;
     currentIndex = (currentIndex - 1 + total) % total;
     recogResult.style.display = "none";
@@ -958,6 +1047,7 @@
   if (recognition) {
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
+
       const target = sentences[getRealIndex()].en;
       const score = similarityScore(transcript, target);
       const percent = Math.round(score * 100);
@@ -1075,7 +1165,7 @@
 
         sentences = sentences.concat(added);
         initOrder();
-        saveState();
+        saveState(); // local + remote
         const totalCount = sentences.length;
         csvStatus.textContent = `（CSV から ${added.length} 文追加／合計 ${totalCount} 文）`;
         setCheer(`新しいフレーズを ${added.length} 文追加したよ！さっそく練習しよ🐸`);
@@ -1092,5 +1182,113 @@
   initOrder();
   updateView();
 </script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // 🔑 ここを Firebase コンソールの「SDK の設定」に書いてある値で置き換える
+  const firebaseConfig = {
+  apiKey: "AIzaSyCDvhch8fikBrvG3Mx5yCmBmQed4W3BVFE",
+  authDomain: "english-trainer-431ff.firebaseapp.com",
+  projectId: "english-trainer-431ff",
+  storageBucket: "english-trainer-431ff.firebasestorage.app",
+  messagingSenderId: "112053627504",
+  appId: "1:112053627504:web:57d6a3c143367a995262b5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentUser = null;
+
+  const loginAreaEl = document.getElementById("loginArea");
+
+  // Firestore から状態を読む
+  window.loadRemoteState = async function () {
+    if (!currentUser) return;
+    try {
+      const docRef = db.collection("users").doc(currentUser.uid).collection("appData").doc("default");
+      const snap = await docRef.get();
+      if (snap.exists) {
+        const data = snap.data();
+        if (data && Array.isArray(data.sentences)) {
+          sentences = data.sentences.map(normalizeSentenceObj);
+          isRandomMode = !!data.isRandomMode;
+          filterMode = data.filterMode || "all";
+          initOrder();
+          updateView();
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              sentences,
+              isRandomMode,
+              filterMode
+            }));
+          } catch (e) {
+            console.warn("localStorage への保存に失敗しましたが、オンラインデータは読み込めています。", e);
+          }
+          if (csvStatus) {
+            csvStatus.textContent = `（オンラインから ${sentences.length} 文読み込み済み）`;
+          }
+          console.log("Firestore からデータを読み込みました");
+        }
+      }
+    } catch (e) {
+      console.error("loadRemoteState error", e);
+    }
+  };
+
+  // Firestore へ状態を保存
+  window.saveRemoteState = async function () {
+    if (!currentUser) return;
+    try {
+      const docRef = db.collection("users").doc(currentUser.uid).collection("appData").doc("default");
+      await docRef.set({
+        sentences,
+        isRandomMode,
+        filterMode,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log("Firestore へ保存しました");
+    } catch (e) {
+      console.error("saveRemoteState error", e);
+    }
+  };
+
+  // ログイン状態の変更
+  auth.onAuthStateChanged(async user => {
+    currentUser = user;
+    if (user) {
+      if (loginAreaEl) {
+        loginAreaEl.textContent = "👤 " + (user.displayName || "ログイン中") + " - データ同期中";
+      }
+      await window.loadRemoteState();
+    } else {
+      if (loginAreaEl) {
+        loginAreaEl.textContent = "🔓 ログインしてデータをオンライン同期";
+      }
+    }
+  });
+
+  // HTML の onclick から呼ぶ関数
+  function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+      console.error(err);
+      alert("ログイン時にエラーが発生しました");
+    });
+  }
+
+  function signOut() {
+    auth.signOut().catch(err => {
+      console.error(err);
+      alert("ログアウト時にエラーが発生しました");
+    });
+  }
+</script>
+
 </body>
 </html>
