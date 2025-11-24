@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>英語トレーニング PRO 🐸</title>
+  <style>
+    :root {
+      --bg-gradient-start: #f4fbff;
+      --bg-gradient-end: #fef6ff;
+      --accent-main: #6ac3b3;
+      --accent-sub: #ffb3c6;
+      --accent-deep: #4a9d8f;
+      --text-main: #333;
+      --text-soft: #777;
+      --card-bg: #ffffff;
+      --border-soft: #e4edf5;
+      --danger: #ff6b6b;
+      --warn: #ffb347;
+      --ok: #3cb371;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      padding: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.06);
+      padding: 18px 18px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 700px) {
+      .card { padding: 24px 28px 28px; }
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 .emoji { font-size: 1.8rem; }
+
+    .mode-tag {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(106, 195, 179, 0.12);
+      color: var(--accent-deep);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mode-tag-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-main);
+    }
+
+    /* CSV area */
+    .csv-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .csv-row input[type="file"] {
+      font-size: 0.8rem;
+    }
+
+    .csv-status {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+
+    #counter {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      text-align: right;
+      margin-bottom: 4px;
+    }
+
+    /* Progress */
+    .progress-wrap { margin-bottom: 10px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #edf2f7;
+      overflow: hidden;
+    }
+    .progress-value {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-main), var(--accent-sub));
+      transition: width 0.25s ease-out;
+    }
+
+    /* Blocks */
+    .block-row {
+      display: grid;
+      grid-template-columns: 1.05fr 1.1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .block {
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      padding: 12px 12px 14px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .label .emoji { font-size: 1rem; }
+
+    .ja-text, .en-text {
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+
+    .en-text.hidden {
+      color: #bfc5cd;
+      font-style: italic;
+    }
+
+    .checkbox-inline {
+      margin-left: auto;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-soft);
+    }
+
+    /* Note */
+    .note-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      background: #f7fffc;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .note-icon { font-size: 1.2rem; }
+    .note-text { font-size: 0.85rem; color: #444; line-height: 1.55; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cheer box */
+    .cheer-box {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px dashed var(--border-soft);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+    .cheer-icon { font-size: 1.3rem; }
+
+    /* Sections & controls */
+    .section {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #e3ecf5;
+    }
+
+    .controls {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.15s;
+      background: #f3f6fb;
+      color: var(--text-main);
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent-main), var(--accent-deep));
+      color: #fff;
+    }
+
+    button.accent {
+      background: linear-gradient(135deg, var(--accent-sub), #ff9fb4);
+      color: #fff;
+    }
+
+    button.toggled {
+      box-shadow: 0 0 0 2px rgba(106, 195, 179, 0.5);
+      background: #e6fffa;
+      color: var(--accent-deep);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 10px rgba(15, 23, 42, 0.12);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.1);
+    }
+
+    .speed-label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #rateInfo {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: var(--accent-deep);
+    }
+
+    /* Recognition result */
+    .recog-result {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+    .recog-row { margin-bottom: 4px; }
+    .recog-label {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+    .recog-text {
+      font-size: 0.85rem;
+    }
+    .recog-score {
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .score-good { color: var(--ok); }
+    .score-mid { color: var(--warn); }
+    .score-bad { color: var(--danger); }
+
+    /* Mobile adjustments */
+    @media (max-width: 640px) {
+      .card { border-radius: 16px; padding: 16px 14px 20px; }
+      .block-row { grid-template-columns: 1fr; }
+      h1 { font-size: 1.2rem; }
+      .header-row { flex-direction: column; align-items: flex-start; }
+      button { flex: 1 1 calc(50% - 6px); justify-content: center; }
+      .csv-row { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 400px) {
+      button { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="header-row">
+        <h1><span class="emoji">🐸</span><span>英語トレーニング PRO</span></h1>
+        <div class="mode-tag">
+          <span class="mode-tag-dot"></span>
+          <span>瞬間英作文・シャドウイング道場</span>
+        </div>
+      </div>
+
+      <!-- CSV / データ読み込み -->
+      <div class="csv-row">
+        <div>📂 CSV読み込み（ja, en, note 列）:</div>
+        <input type="file" id="csvInput" accept=".csv,.tsv,text/csv">
+        <span id="csvStatus" class="csv-status">（未読み込み・デフォルト例文使用中）</span>
+      </div>
+
+      <div id="counter"></div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>今日の進捗</span>
+          <span id="progressText">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-value" id="progressValue"></div>
+        </div>
+      </div>
+
+      <!-- Text blocks -->
+      <div class="block-row">
+        <div class="block">
+          <div class="label"><span class="emoji">🇯🇵</span><span>日本語</span></div>
+          <div id="jaText" class="ja-text"></div>
+        </div>
+        <div class="block">
+          <div class="label">
+            <span class="emoji">🇬🇧</span><span>英語</span>
+            <label class="checkbox-inline">
+              <input type="checkbox" id="hideEn"> 英文を隠す
+            </label>
+          </div>
+          <div id="enText" class="en-text"></div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div id="noteBox" class="note-box" style="display:none;">
+        <div class="note-icon">💡</div>
+        <div id="noteText" class="note-text"></div>
+      </div>
+
+      <!-- Cheer -->
+      <div class="cheer-box">
+        <div class="cheer-icon">🐸</div>
+        <div id="cheerText">ようこそ英語トレーニング道場へ。まずは1文、声に出してみよ〜。</div>
+      </div>
+
+      <!-- Speed -->
+      <div class="section">
+        <div class="speed-label">
+          <span>🎧 英語の速度：</span><span id="rateInfo">1.0x（ふつう）</span>
+        </div>
+        <div class="controls">
+          <button id="rateSlow">🐢 ゆっくり</button>
+          <button id="rateNormal">⚖️ ふつう</button>
+          <button id="rateFast">🏃‍♀️ はやい</button>
+        </div>
+      </div>
+
+      <!-- Audio / shadowing -->
+      <div class="section">
+        <div class="controls">
+          <button id="btnPlayJa">🗣️ 日本語を聞く</button>
+          <button id="btnPlayEn" class="primary">🎧 英語を1回聞く</button>
+          <button id="btnShadow" class="accent">🔁 シャドウイング（3回）</button>
+        </div>
+      </div>
+
+      <!-- Recognition -->
+      <div class="section">
+        <div class="controls">
+          <button id="btnRecog" class="primary">🎙️ 英語を話してチェック</button>
+        </div>
+        <div id="recogResult" class="recog-result" style="display:none;">
+          <div class="recog-row">
+            <div class="recog-label">あなたの発話（認識結果）</div>
+            <div id="recogYour" class="recog-text"></div>
+          </div>
+          <div class="recog-row">
+            <div class="recog-label">正解の英文</div>
+            <div id="recogTarget" class="recog-text"></div>
+          </div>
+          <div class="recog-row">
+            <div class="recog-label">類似度</div>
+            <div id="recogScore" class="recog-score"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter mode buttons -->
+      <div class="section">
+        <div class="controls">
+          <button id="btnModeAll">📚 ぜんぶ</button>
+          <button id="btnModeFavOnly">⭐ お気に入りのみ</button>
+          <button id="btnModeReviewOnly">🔥 要復習のみ</button>
+        </div>
+      </div>
+
+      <!-- Favorite / navigation / random -->
+      <div class="section">
+        <div class="controls">
+          <button id="btnFav">⭐ お気に入り</button>
+          <button id="btnReview">🔥 要復習</button>
+          <button id="btnRandom">🎲 ランダム</button>
+          <button id="btnShowAnswer">✨ 答えを表示</button>
+          <button id="btnPrev">⬅️ 前へ</button>
+          <button id="btnNext">➡️ 次へ</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  /* === 状態保存キー（V3：filterMode も保存） === */
+  const STORAGE_KEY = "piapiaStateV3";
+  const hasSavedState = !!localStorage.getItem(STORAGE_KEY);
+
+  /* === デフォルト例文 === */
+  const defaultSentences = [
+    {
+      ja: "あなたは年の割に老けて見える",
+      en: "You look old for your age.",
+      note: "",
+      favorite: false,
+      review: false
+    },
+    {
+      ja: "あなたは海のそばで野球の試合を見る",
+      en: "You watch baseball games by the sea.",
+      note: "",
+      favorite: false,
+      review: false
+    },
+    {
+      ja: "これは素敵な車です",
+      en: "This is a nice car.",
+      note: "nice が car（名詞）を修飾する＝形容詞",
+      favorite: false,
+      review: false
+    },
+    {
+      ja: "僕は一生懸命に、英語を勉強する",
+      en: "I study English hard.",
+      note: "hard が study（動詞）を修飾する＝副詞",
+      favorite: false,
+      review: true
+    },
+    {
+      ja: "あの家は大きい",
+      en: "That house is big.",
+      note: "形容詞は C（補語）になれる",
+      favorite: true,
+      review: false
+    }
+  ];
+
+  /* === 保存/読込 === */
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (Array.isArray(obj)) {
+        return { sentences: obj, isRandomMode: false, filterMode: "all" };
+      }
+      if (!obj || !Array.isArray(obj.sentences)) return null;
+      return {
+        sentences: obj.sentences.map(s => ({
+          ja: s.ja || "",
+          en: s.en || "",
+          note: s.note || "",
+          favorite: !!s.favorite,
+          review: !!s.review
+        })),
+        isRandomMode: !!obj.isRandomMode,
+        filterMode: obj.filterMode || "all"
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        sentences,
+        isRandomMode,
+        filterMode
+      }));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  /* === グローバル状態 === */
+  const loaded = loadState();
+  let sentences = loaded?.sentences || defaultSentences.slice();
+  let isRandomMode = loaded?.isRandomMode || false;
+  let filterMode = loaded?.filterMode || "all"; // "all" | "fav" | "review"
+
+  let order = [];            // sentences のインデックス配列
+  let currentIndex = 0;      // order の中での位置
+  let speechRate = 1.0;
+
+  /* === DOM取得 === */
+  const jaText = document.getElementById("jaText");
+  const enText = document.getElementById("enText");
+  const hideEnCheckbox = document.getElementById("hideEn");
+  const counter = document.getElementById("counter");
+  const rateInfo = document.getElementById("rateInfo");
+  const progressText = document.getElementById("progressText");
+  const progressValue = document.getElementById("progressValue");
+  const noteBox = document.getElementById("noteBox");
+  const noteText = document.getElementById("noteText");
+  const cheerText = document.getElementById("cheerText");
+  const csvStatus = document.getElementById("csvStatus");
+
+  const btnFav = document.getElementById("btnFav");
+  const btnReview = document.getElementById("btnReview");
+  const btnRandom = document.getElementById("btnRandom");
+  const btnModeAll = document.getElementById("btnModeAll");
+  const btnModeFavOnly = document.getElementById("btnModeFavOnly");
+  const btnModeReviewOnly = document.getElementById("btnModeReviewOnly");
+
+  const recogResult = document.getElementById("recogResult");
+  const recogYour = document.getElementById("recogYour");
+  const recogTarget = document.getElementById("recogTarget");
+  const recogScore = document.getElementById("recogScore");
+
+  // すでに保存済みのデータがあればステータス表示を変える
+  if (hasSavedState && sentences.length > 0) {
+    csvStatus.textContent = `（保存済みの学習データ ${sentences.length} 文を読み込み済み）`;
+  }
+
+  /* === 応援メッセージ === */
+  const cheerMessagesNeutral = [
+    "いい感じいい感じ、そのリズムのままいこ🐸",
+    "声に出した自分をまず褒めよう。カエルも拍手してる👏",
+    "1文ずつでOK。積み上げたぶんだけ口が勝手に動くようになるよ。",
+    "うまく言えなくてもOK。脳の配線は今つながり中〜🧠",
+    "英語のリズム、ちょっとずつ体に入ってきてるよ。"
+  ];
+  const cheerMessagesGood = [
+    "おお〜かなり近い！その調子でガンガン行こ🐸🔥",
+    "ほぼ完璧！次はちょっとスピード上げてチャレンジしてみる？",
+    "ナイスシャドウイング！リズムもいい感じだよ✨",
+    "英語脳、ちゃんと育ってる…カエル師匠も感動してる😭",
+  ];
+  const cheerMessagesReview = [
+    "ちょっと難しめ？ゆっくりモードで分解して攻めよ🐢",
+    "1回で完璧じゃなくていいよ。同じ文を何周も回すのが正解。",
+    "「要復習」に入れておく？反復がいちばん強い味方だよ。",
+  ];
+
+  function randomFrom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function setCheer(message) {
+    cheerText.textContent = message;
+  }
+
+  function randomCheerNeutral() {
+    setCheer(randomFrom(cheerMessagesNeutral));
+  }
+
+  /* === ランダム順 + フィルタ === */
+  function makeOrder() {
+    let base = [];
+    for (let i = 0; i < sentences.length; i++) {
+      const s = sentences[i];
+      if (filterMode === "fav" && !s.favorite) continue;
+      if (filterMode === "review" && !s.review) continue;
+      base.push(i);
+    }
+    if (base.length === 0) return [];
+
+    if (!isRandomMode) return base;
+
+    return base
+      .map(v => ({ v, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(obj => obj.v);
+  }
+
+  function initOrder() {
+    order = makeOrder();
+    if (order.length === 0) {
+      if (filterMode !== "all") {
+        filterMode = "all";
+        saveState();
+        order = makeOrder();
+        setCheer("このモードに該当する文がなかったので、全部モードに戻したよ🐸");
+      }
+    }
+    if (order.length === 0 && sentences.length > 0) {
+      order = [...Array(sentences.length).keys()];
+    }
+    currentIndex = 0;
+  }
+
+  function getRealIndex() {
+    if (order.length === 0) return 0;
+    return order[Math.min(Math.max(currentIndex, 0), order.length - 1)];
+  }
+
+  function updateRandomButton() {
+    if (isRandomMode) {
+      btnRandom.classList.add("toggled");
+      btnRandom.textContent = "🎲 ランダム中";
+    } else {
+      btnRandom.classList.remove("toggled");
+      btnRandom.textContent = "🎲 ランダム";
+    }
+  }
+
+  function updateFilterButtons() {
+    btnModeAll.classList.toggle("toggled", filterMode === "all");
+    btnModeFavOnly.classList.toggle("toggled", filterMode === "fav");
+    btnModeReviewOnly.classList.toggle("toggled", filterMode === "review");
+  }
+
+  /* === 進捗 & 表示 === */
+  function updateProgress() {
+    const total = order.length || sentences.length || 1;
+    const percent = Math.round(((currentIndex + 1) / total) * 100);
+    progressText.textContent = percent + "%";
+    progressValue.style.width = percent + "%";
+  }
+
+  function updateFavButtons() {
+    const s = sentences[getRealIndex()];
+    if (s.favorite) {
+      btnFav.classList.add("toggled");
+      btnFav.textContent = "⭐ お気に入り中";
+    } else {
+      btnFav.classList.remove("toggled");
+      btnFav.textContent = "⭐ お気に入り";
+    }
+
+    if (s.review) {
+      btnReview.classList.add("toggled");
+      btnReview.textContent = "🔥 要復習中";
+    } else {
+      btnReview.classList.remove("toggled");
+      btnReview.textContent = "🔥 要復習";
+    }
+  }
+
+  function updateNote() {
+    const note = sentences[getRealIndex()].note;
+    if (note && note.trim() !== "") {
+      noteText.textContent = note;
+      noteBox.style.display = "flex";
+    } else {
+      noteBox.style.display = "none";
+    }
+  }
+
+  function updateEnView() {
+    const s = sentences[getRealIndex()];
+    if (hideEnCheckbox.checked) {
+      enText.textContent = "（耳だけで再現チャレンジ🐸）";
+      enText.classList.add("hidden");
+    } else {
+      enText.textContent = s.en;
+      enText.classList.remove("hidden");
+    }
+  }
+
+  function updateView() {
+    if (sentences.length === 0) {
+      counter.textContent = "文 0 / 0";
+      jaText.textContent = "";
+      enText.textContent = "";
+      noteBox.style.display = "none";
+      progressText.textContent = "0%";
+      progressValue.style.width = "0%";
+      return;
+    }
+
+    const realIdx = getRealIndex();
+    const s = sentences[realIdx];
+    const total = order.length || sentences.length;
+    counter.textContent = `文 ${currentIndex + 1} / ${total}`;
+    jaText.textContent = s.ja;
+    updateEnView();
+    updateNote();
+    updateProgress();
+    updateFavButtons();
+    updateRandomButton();
+    updateFilterButtons();
+    randomCheerNeutral();
+  }
+
+  hideEnCheckbox.addEventListener("change", updateEnView);
+
+  /* === 読み上げ === */
+  function speak(text, lang = "en-US") {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = speechRate;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
+
+  document.getElementById("btnPlayJa").addEventListener("click", () => {
+    speak(sentences[getRealIndex()].ja, "ja-JP");
+  });
+
+  document.getElementById("btnPlayEn").addEventListener("click", () => {
+    speak(sentences[getRealIndex()].en, "en-US");
+  });
+
+  document.getElementById("btnShadow").addEventListener("click", () => {
+    const s = sentences[getRealIndex()];
+    const repeat = 3;
+    const pauseMs = 1500;
+    let count = 0;
+
+    window.speechSynthesis.cancel();
+
+    function playOnce() {
+      if (count >= repeat) return;
+      const u = new SpeechSynthesisUtterance(s.en);
+      u.lang = "en-US";
+      u.rate = speechRate;
+      u.onend = () => {
+        count++;
+        if (count < repeat) {
+          setTimeout(playOnce, pauseMs);
+        } else {
+          setCheer(randomFrom(cheerMessagesGood));
+        }
+      };
+      window.speechSynthesis.speak(u);
+    }
+    playOnce();
+  });
+
+  document.getElementById("btnShowAnswer").addEventListener("click", () => {
+    hideEnCheckbox.checked = false;
+    updateEnView();
+  });
+
+  document.getElementById("btnNext").addEventListener("click", () => {
+    const total = order.length || sentences.length;
+    currentIndex = (currentIndex + 1) % total;
+    recogResult.style.display = "none";
+    updateView();
+  });
+
+  document.getElementById("btnPrev").addEventListener("click", () => {
+    const total = order.length || sentences.length;
+    currentIndex = (currentIndex - 1 + total) % total;
+    recogResult.style.display = "none";
+    updateView();
+  });
+
+  /* === 速度変更 === */
+  document.getElementById("rateSlow").addEventListener("click", () => {
+    speechRate = 0.75;
+    rateInfo.textContent = "0.75x（ゆっくり）";
+  });
+  document.getElementById("rateNormal").addEventListener("click", () => {
+    speechRate = 1.0;
+    rateInfo.textContent = "1.0x（ふつう）";
+  });
+  document.getElementById("rateFast").addEventListener("click", () => {
+    speechRate = 1.3;
+    rateInfo.textContent = "1.3x（はやい）";
+  });
+
+  /* === お気に入り / 要復習 === */
+  btnFav.addEventListener("click", () => {
+    const realIdx = getRealIndex();
+    const s = sentences[realIdx];
+    s.favorite = !s.favorite;
+    saveState();
+    initOrder();
+    updateView();
+    setCheer(
+      s.favorite
+        ? "この文、お気に入り入り〜⭐ 何度も口に出して仲良くなろう。"
+        : "お気に入り解除。でもいつでも戻ってきていいからね🐸"
+    );
+  });
+
+  btnReview.addEventListener("click", () => {
+    const realIdx = getRealIndex();
+    const s = sentences[realIdx];
+    s.review = !s.review;
+    saveState();
+    initOrder();
+    updateView();
+    setCheer(
+      s.review
+        ? randomFrom(cheerMessagesReview)
+        : "要復習リストから一旦卒業、おめでとう〜🎉"
+    );
+  });
+
+  /* === フィルターモード === */
+  btnModeAll.addEventListener("click", () => {
+    filterMode = "all";
+    saveState();
+    initOrder();
+    updateView();
+    setCheer("全部モード。バリエーション多めに口を動かしていこ🐸");
+  });
+
+  btnModeFavOnly.addEventListener("click", () => {
+    filterMode = "fav";
+    saveState();
+    initOrder();
+    updateView();
+    setCheer("お気に入りだけモード。推しフレーズを何度も叩き込もう🔥");
+  });
+
+  btnModeReviewOnly.addEventListener("click", () => {
+    filterMode = "review";
+    saveState();
+    initOrder();
+    updateView();
+    setCheer("要復習だけモード。弱点集中トレーニングだよ🐸💪");
+  });
+
+  /* === ランダムモード === */
+  btnRandom.addEventListener("click", () => {
+    isRandomMode = !isRandomMode;
+    initOrder();
+    saveState();
+    updateView();
+    setCheer(
+      isRandomMode
+        ? "ランダムモードへ！どんな順番で来ても対応できるのが本当の英語力🐸🔥"
+        : "通常モードに戻ったよ〜。文の流れで覚えたいときにもおすすめ。"
+    );
+  });
+
+  /* === 音声認識 === */
+  function normalizeText(str) {
+    return str
+      .toLowerCase()
+      .replace(/[^\w\s']/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return dp[m][n];
+  }
+
+  function similarityScore(a, b) {
+    const na = normalizeText(a);
+    const nb = normalizeText(b);
+    if (!na && !nb) return 1;
+    const dist = levenshtein(na, nb);
+    const maxLen = Math.max(na.length, nb.length);
+    return maxLen === 0 ? 1 : 1 - dist / maxLen;
+  }
+
+  let recognition = null;
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRec) {
+    recognition = new SpeechRec();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+  } else {
+    const btnRecog = document.getElementById("btnRecog");
+    btnRecog.disabled = true;
+    btnRecog.textContent = "🎙️ 音声認識非対応ブラウザ";
+    setCheer("音声認識は Chrome など対応ブラウザで使えるよ〜🐸");
+  }
+
+  const btnRecog = document.getElementById("btnRecog");
+  btnRecog.addEventListener("click", () => {
+    if (!recognition) {
+      alert("このブラウザは音声認識に対応していないみたいです。Chrome などを試してみてね。");
+      return;
+    }
+    setCheer("OK、マイクで英語を言ってみて！録音中だよ🎙️");
+    recognition.start();
+  });
+
+  if (recognition) {
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const target = sentences[getRealIndex()].en;
+      const score = similarityScore(transcript, target);
+      const percent = Math.round(score * 100);
+      recogYour.textContent = transcript;
+      recogTarget.textContent = target;
+      recogScore.textContent = `${percent}% くらい一致してるよ`;
+
+      recogScore.classList.remove("score-good", "score-mid", "score-bad");
+
+      if (score >= 0.85) {
+        recogScore.classList.add("score-good");
+        setCheer(randomFrom(cheerMessagesGood));
+      } else if (score >= 0.6) {
+        recogScore.classList.add("score-mid");
+        setCheer("かなり近いよ！もう一回だけ丁寧にゆっくり言ってみよ🐢");
+      } else {
+        recogScore.classList.add("score-bad");
+        setCheer("単語か語順がちょっとズレたかも。分けてゆっくり言ってみよ〜。");
+      }
+      recogResult.style.display = "block";
+    };
+
+    recognition.onerror = (e) => {
+      console.error(e);
+      setCheer("マイクや権限でエラーになったみたい。設定をちょっと確認してみてね🐸");
+    };
+  }
+
+  /* === CSV 1行パース用ヘルパー === */
+
+  function parseDelimitedLine(line) {
+    if (line.includes("\t") && !line.includes(",")) {
+      return line.split("\t");
+    }
+    return parseCSVLine(line);
+  }
+
+  function parseCSVLine(line) {
+    const result = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === "," && !inQuotes) {
+        result.push(current);
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+
+    result.push(current);
+    return result;
+  }
+
+  /* === CSV 読み込み（追加モード） === */
+  document.getElementById("csvInput").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+        if (lines.length < 2) {
+          alert("有効なデータ行がありません。");
+          return;
+        }
+        const header = parseDelimitedLine(lines[0]).map(h => h.trim().toLowerCase());
+        const idxJa = header.indexOf("ja");
+        const idxEn = header.indexOf("en");
+        const idxNote = header.indexOf("note");
+        if (idxJa === -1 || idxEn === -1) {
+          alert("ヘッダーに ja, en 列が必要です。note 列は任意です。");
+          return;
+        }
+
+        const existingKeySet = new Set(
+          sentences.map(s => `${s.ja}|||${s.en}`)
+        );
+
+        const added = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line.trim()) continue;
+
+          const cols = parseDelimitedLine(line);
+
+          const ja = (cols[idxJa] || "").trim();
+          const en = (cols[idxEn] || "").trim();
+          const note = idxNote >= 0 ? (cols[idxNote] || "").trim() : "";
+          if (!ja || !en) continue;
+
+          const key = `${ja}|||${en}`;
+          if (existingKeySet.has(key)) {
+            continue; // 重複はスキップ
+          }
+          existingKeySet.add(key);
+          added.push({
+            ja,
+            en,
+            note,
+            favorite: false,
+            review: false
+          });
+        }
+
+        if (added.length === 0) {
+          alert("新しく追加できる文がありませんでした。（すでに登録済みかも）");
+          return;
+        }
+
+        const beforeCount = sentences.length;
+        sentences = sentences.concat(added);
+        initOrder();
+        saveState();
+        const totalCount = sentences.length;
+        csvStatus.textContent = `（CSV から ${added.length} 文追加／合計 ${totalCount} 文）`;
+        setCheer(`新しいフレーズを ${added.length} 文追加したよ！さっそく練習しよ🐸`);
+        recogResult.style.display = "none";
+        updateView();
+      } catch (err) {
+        console.error(err);
+        alert("CSV の読み込み中にエラーが発生しました。");
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  });
+
+  /* === 初期化 === */
+  initOrder();
+  updateView();
+</script>
+</body>
+</html>
